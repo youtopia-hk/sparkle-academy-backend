@@ -1,36 +1,50 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface ISiteSettings extends Document {
-  // Logos
-  mainLogo?: string;
-  academyLogo?: string;
-  innovateLogo?: string;
+  // General
+  siteName: string;
+  siteTagline?: string;
+  logoUrl?: string;
 
-  // Branding
-  primaryFont: string;
-  secondaryFont?: string;
-  primaryColor?: string;
-  secondaryColor?: string;
+  // Sparkle Academy Contact
+  academyContactEmail?: string;
+  academyContactPhone?: string;
+  academySocialMedia?: {
+    facebook?: string;
+    instagram?: string;
+    youtube?: string;
+    linkedin?: string;
+    twitter?: string;
+    patreon?: string;
+  };
 
-  // Homepage Content
-  homepageTitle: string;
-  homepageSubtitle?: string;
-  homepageDescription: string;
-  homepageImages: string[];
+  // Sparkle INNOVATE Contact
+  innovateContactEmail?: string;
+  innovateContactPhone?: string;
+  innovateSocialMedia?: {
+    facebook?: string;
+    instagram?: string;
+    youtube?: string;
+    linkedin?: string;
+    twitter?: string;
+    patreon?: string;
+  };
 
-  // About Us
-  aboutUsTitle: string;
-  aboutUsContent: string;
-  aboutUsImages: string[];
+  // Footer
+  footerText?: string;
 
-  // Contact
-  contactEmail: string;
-  contactPhone?: string;
+  // About Page Content
+  academyAboutContent?: string;   // HTML content for Academy About page
+  innovateAboutContent?: string;  // HTML content for INNOVATE About page
 
-  // Social Media
-  facebookUrl?: string;
-  instagramUrl?: string;
-  linkedinUrl?: string;
+  // Legacy fields (kept for backward compatibility)
+  primaryFont?: string;
+  homepageTitle?: string;
+  homepageDescription?: string;
+  homepageImages?: string[];
+  aboutUsTitle?: string;
+  aboutUsContent?: string;
+  aboutUsImages?: string[];
 
   updatedAt: Date;
   updatedBy?: mongoose.Types.ObjectId;
@@ -38,63 +52,54 @@ export interface ISiteSettings extends Document {
 
 const SiteSettingsSchema = new Schema<ISiteSettings>(
   {
-    // Logos
-    mainLogo: { type: String },
-    academyLogo: { type: String },
-    innovateLogo: { type: String },
+    // General
+    siteName: {
+      type: String,
+      required: [true, 'Site name is required'],
+      default: 'Sparkle Education',
+    },
+    siteTagline: { type: String },
+    logoUrl: { type: String },
 
-    // Branding
-    primaryFont: {
-      type: String,
-      default: 'Inter',
-    },
-    secondaryFont: { type: String },
-    primaryColor: { type: String },
-    secondaryColor: { type: String },
-
-    // Homepage Content
-    homepageTitle: {
-      type: String,
-      required: [true, 'Homepage title is required'],
-      default: 'Welcome to Sparkle Education',
-    },
-    homepageSubtitle: { type: String },
-    homepageDescription: {
-      type: String,
-      required: [true, 'Homepage description is required'],
-      default: 'Empowering learners of all ages',
-    },
-    homepageImages: {
-      type: [String],
-      default: [],
+    // Sparkle Academy Contact
+    academyContactEmail: { type: String },
+    academyContactPhone: { type: String },
+    academySocialMedia: {
+      facebook: { type: String },
+      instagram: { type: String },
+      youtube: { type: String },
+      linkedin: { type: String },
+      twitter: { type: String },
+      patreon: { type: String },
     },
 
-    // About Us
-    aboutUsTitle: {
-      type: String,
-      default: 'About Sparkle',
-    },
-    aboutUsContent: {
-      type: String,
-      default: '',
-    },
-    aboutUsImages: {
-      type: [String],
-      default: [],
+    // Sparkle INNOVATE Contact
+    innovateContactEmail: { type: String },
+    innovateContactPhone: { type: String },
+    innovateSocialMedia: {
+      facebook: { type: String },
+      instagram: { type: String },
+      youtube: { type: String },
+      linkedin: { type: String },
+      twitter: { type: String },
+      patreon: { type: String },
     },
 
-    // Contact
-    contactEmail: {
-      type: String,
-      required: [true, 'Contact email is required'],
-      match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email'],
-    },
-    contactPhone: { type: String },
+    // Footer
+    footerText: { type: String },
 
-    // Social Media
-    facebookUrl: { type: String },
-    instagramUrl: { type: String },
-    linkedinUrl: { type: String },
+    // About Page Content
+    academyAboutContent: { type: String },
+    innovateAboutContent: { type: String },
+
+    // Legacy fields (kept for backward compatibility)
+    primaryFont: { type: String, default: 'Inter' },
+    homepageTitle: { type: String },
+    homepageDescription: { type: String },
+    homepageImages: { type: [String], default: [] },
+    aboutUsTitle: { type: String },
+    aboutUsContent: { type: String },
+    aboutUsImages: { type: [String], default: [] },
 
     updatedBy: {
       type: Schema.Types.ObjectId,

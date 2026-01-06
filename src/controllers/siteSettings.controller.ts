@@ -7,15 +7,10 @@ export const getSiteSettings = async (req: Request, res: Response): Promise<void
     // SiteSettings is a singleton - only one record exists
     let settings = await SiteSettings.findOne();
 
-    // If no settings exist, create default settings
+    // If no settings exist, create default settings with minimal data
     if (!settings) {
       settings = new SiteSettings({
-        contactEmail: 'info@sparkle.com',
-        homepageTitle: 'Welcome to Sparkle Education',
-        homepageDescription: 'Empowering learners of all ages',
-        aboutUsTitle: 'About Sparkle',
-        aboutUsContent: '',
-        primaryFont: 'Inter'
+        siteName: 'Sparkle Education',
       });
       await settings.save();
     }
