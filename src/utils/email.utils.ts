@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 
 interface EmailOptions {
   to: string;
@@ -7,25 +7,22 @@ interface EmailOptions {
   html?: string;
 }
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.EMAIL_PORT || '587'),
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
+// Initialize SendGrid with API key
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+}
 
 export const sendEmail = async (options: EmailOptions): Promise<void> => {
   try {
-    await transporter.sendMail({
-      from: `"Sparkle Education" <${process.env.EMAIL_USER}>`,
+    const msg = {
       to: options.to,
+      from: process.env.EMAIL_FROM || 'inquiry.sparkle@gmail.com', // Must be verified sender in SendGrid
       subject: options.subject,
       text: options.text,
       html: options.html || options.text,
-    });
+    };
+
+    await sgMail.send(msg);
     console.log(`Email sent to ${options.to}`);
   } catch (error) {
     console.error('Error sending email:', error);
