@@ -1,8 +1,11 @@
+// Load environment variables FIRST before any other imports
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import dotenv from 'dotenv';
 import path from 'path';
 import connectDB from './config/database';
 import { errorHandler } from './middleware/errorHandler.middleware';
@@ -18,9 +21,6 @@ import testimonialRoutes from './routes/testimonial.routes';
 import mediaRoutes from './routes/media.routes';
 import contactRoutes from './routes/contact.routes';
 import publicRoutes from './routes/public.routes';
-
-// Load environment variables
-dotenv.config();
 
 // Initialize Express app
 const app: Application = express();
