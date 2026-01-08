@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   uploadImage,
+  uploadMultipleImages,
   getAllMedia,
   getMediaById,
   updateMedia,
@@ -17,6 +18,7 @@ router.use(authMiddleware);
 router.use(requireAdmin);
 
 router.post('/upload', upload.single('image'), uploadImage);
+router.post('/upload-multiple', upload.array('images', 10), uploadMultipleImages);
 router.get('/', getAllMedia);
 router.get('/:id', getMediaById);
 router.put('/:id', updateMedia);

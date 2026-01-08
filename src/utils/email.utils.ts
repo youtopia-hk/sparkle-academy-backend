@@ -42,12 +42,33 @@ export const sendContactEmail = async (
   const phoneText = phone ? `Phone: ${phone}\n` : '';
 
   const html = `
-    <h2>New Contact Form Submission</h2>
-    <p><strong>Name:</strong> ${name}</p>
-    <p><strong>Email:</strong> ${email}</p>
-    ${phoneHtml}
-    <p><strong>Message:</strong></p>
-    <p>${message}</p>
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+    </head>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+      <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">
+          New Contact Form Submission
+        </h2>
+        <div style="background-color: #f3f4f6; padding: 15px; border-radius: 5px; margin: 20px 0;">
+          <p style="margin: 10px 0;"><strong>Name:</strong> ${name}</p>
+          <p style="margin: 10px 0;"><strong>Email:</strong> <a href="mailto:${email}" style="color: #2563eb;">${email}</a></p>
+          ${phoneHtml}
+        </div>
+        <div style="margin: 20px 0;">
+          <p style="margin: 10px 0;"><strong>Message:</strong></p>
+          <div style="background-color: #ffffff; padding: 15px; border-left: 4px solid #2563eb; border-radius: 3px;">
+            ${message.replace(/\n/g, '<br>')}
+          </div>
+        </div>
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 12px;">
+          <p>This email was sent from Sparkle Education contact form</p>
+        </div>
+      </div>
+    </body>
+    </html>
   `;
 
   await sendEmail({

@@ -11,6 +11,7 @@ export interface IMediaAsset extends Document {
   filename: string;
   storedFilename: string;
   filePath: string;
+  r2Key: string; // R2 object key (e.g., 'images/file-123456.jpg')
   fileType: 'image' | 'video' | 'document';
   mimeType: string;
   size: number;
@@ -35,6 +36,10 @@ const MediaAssetSchema = new Schema<IMediaAsset>(
     filePath: {
       type: String,
       required: [true, 'File path is required'],
+    },
+    r2Key: {
+      type: String,
+      required: [true, 'R2 key is required'],
     },
     fileType: {
       type: String,

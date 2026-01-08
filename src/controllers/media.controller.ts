@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import MediaAsset from '../models/MediaAsset';
-import fs from 'fs';
-import path from 'path';
+import { uploadToR2, uploadMultipleToR2, deleteFromR2 } from '../utils/r2';
 
 export const uploadImage = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -15,6 +14,14 @@ export const uploadImage = async (req: Request, res: Response): Promise<void> =>
 
     const { altText, tags } = req.body;
 
+    // Upload to R2
+    const { url, key } = await uploadToR2(
+      req.file.buffer,
+      req.file.originalname,
+      req.file.mimetype,
+      'images'
+    );
+
     // Determine file type based on mimetype
     let fileType: 'image' | 'video' | 'document' = 'image';
     if (req.file.mimetype.startsWith('video/')) {
@@ -26,8 +33,9 @@ export const uploadImage = async (req: Request, res: Response): Promise<void> =>
     // Create MediaAsset record
     const mediaAsset = new MediaAsset({
       filename: req.file.originalname,
-      storedFilename: req.file.filename,
-      filePath: req.file.path,
+      storedFilename: key.split('/')[1], // Extract filename from key
+      filePath: url,
+      r2Key: key,
       fileType,
       mimeType: req.file.mimetype,
       size: req.file.size,
@@ -44,15 +52,6 @@ export const uploadImage = async (req: Request, res: Response): Promise<void> =>
     });
   } catch (error: any) {
     console.error('Error uploading image:', error);
-
-    // Clean up uploaded file if database save failed
-    if (req.file?.path) {
-      try {
-        fs.unlinkSync(req.file.path);
-      } catch (unlinkError) {
-        console.error('Error deleting file:', unlinkError);
-      }
-    }
 
     if (error.name === 'ValidationError') {
       res.status(400).json({
@@ -182,6 +181,79 @@ export const updateMedia = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
+export const uploadMultipleImages = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const files = req.files as Express.Multer.File[];
+
+    if (!files || files.length === 0) {
+      res.status(400).json({
+        success: false,
+        error: { message: 'No files uploaded', code: 'NO_FILES' }
+      });
+      return;
+    }
+
+    // Upload all files to R2 in parallel
+    const uploadResults = await uploadMultipleToR2(
+      files.map(file => ({
+        buffer: file.buffer,
+        originalFilename: file.originalname,
+        mimetype: file.mimetype
+      })),
+      'images'
+    );
+
+    // Create MediaAsset records
+    const mediaAssets = await Promise.all(
+      files.map(async (file, index) => {
+        const { url, key } = uploadResults[index];
+
+        let fileType: 'image' | 'video' | 'document' = 'image';
+        if (file.mimetype.startsWith('video/')) {
+          fileType = 'video';
+        } else if (file.mimetype.startsWith('application/')) {
+          fileType = 'document';
+        }
+
+        const mediaAsset = new MediaAsset({
+          filename: file.originalname,
+          storedFilename: key.split('/')[1],
+          filePath: url,
+          r2Key: key,
+          fileType,
+          mimeType: file.mimetype,
+          size: file.size,
+          altText: '',
+          tags: [],
+          uploadedBy: req.user?.userId
+        });
+
+        return await mediaAsset.save();
+      })
+    );
+
+    res.status(201).json({
+      success: true,
+      data: mediaAssets
+    });
+  } catch (error: any) {
+    console.error('Error uploading multiple images:', error);
+
+    if (error.name === 'ValidationError') {
+      res.status(400).json({
+        success: false,
+        error: { message: error.message, code: 'VALIDATION_ERROR' }
+      });
+      return;
+    }
+
+    res.status(500).json({
+      success: false,
+      error: { message: 'Failed to upload images', code: 'UPLOAD_ERROR' }
+    });
+  }
+};
+
 export const deleteMedia = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -196,14 +268,12 @@ export const deleteMedia = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    // Delete the file from filesystem
+    // Delete the file from R2
     try {
-      if (fs.existsSync(media.filePath)) {
-        fs.unlinkSync(media.filePath);
-      }
-    } catch (fsError) {
-      console.error('Error deleting file from filesystem:', fsError);
-      // Continue with database deletion even if file deletion fails
+      await deleteFromR2(media.r2Key);
+    } catch (r2Error) {
+      console.error('Error deleting file from R2:', r2Error);
+      // Continue with database deletion even if R2 deletion fails
     }
 
     // Delete from database
