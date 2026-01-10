@@ -59,6 +59,15 @@ app.get('/health', (req: Request, res: Response) => {
   });
 });
 
+// Healthz endpoint for uptime monitoring (UptimeRobot)
+app.get('/healthz', (req: Request, res: Response) => {
+  res.status(200).json({
+    success: true,
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // API Routes
 // Authentication routes (with rate limiting)
 app.use('/api/auth', authLimiter, authRoutes);

@@ -16,6 +16,7 @@ export interface IPaidProgram extends Document {
   minAge?: number;
   maxAge?: number;
   duration?: string;
+  time?: string;
   level?: 'Beginner' | 'Intermediate' | 'Advanced';
   registrationLink?: string;
   price?: number;
@@ -90,6 +91,9 @@ const PaidProgramSchema = new Schema<IPaidProgram>(
       min: [0, 'Maximum age must be positive'],
     },
     duration: {
+      type: String,
+    },
+    time: {
       type: String,
     },
     level: {

@@ -9,6 +9,7 @@ export interface ITestimonial extends Document {
   rating?: number;
   programId?: mongoose.Types.ObjectId;
   programType?: 'paid' | 'trial';
+  programModel?: 'PaidProgram' | 'TrialProgram';
   isActive: boolean;
   isFeatured: boolean;
   displayOrder: number;
@@ -42,11 +43,15 @@ const TestimonialSchema = new Schema<ITestimonial>(
     },
     programId: {
       type: Schema.Types.ObjectId,
-      refPath: 'programType',
+      refPath: 'programModel',
     },
     programType: {
       type: String,
       enum: Object.values(PROGRAM_TYPES),
+    },
+    programModel: {
+      type: String,
+      enum: ['PaidProgram', 'TrialProgram'],
     },
     isActive: {
       type: Boolean,
@@ -65,6 +70,21 @@ const TestimonialSchema = new Schema<ITestimonial>(
     timestamps: true,
   }
 );
+
+// Pre-save hook to set programModel based on programType
+TestimonialSchema.pre<ITestimonial>('save', function () {
+  if (this.programType) {
+    this.programModel = this.programType === 'paid' ? 'PaidProgram' : 'TrialProgram';
+  }
+});
+
+// Pre-update hook to set programModel when programType is updated
+TestimonialSchema.pre(['updateOne', 'findOneAndUpdate'], function () {
+  const update = this.getUpdate() as any;
+  if (update.programType) {
+    update.programModel = update.programType === 'paid' ? 'PaidProgram' : 'TrialProgram';
+  }
+});
 
 // Indexes
 TestimonialSchema.index({ isActive: 1, isFeatured: 1 });

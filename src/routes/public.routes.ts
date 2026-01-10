@@ -5,6 +5,7 @@ import {
   getPublicEntities,
   getPublicCategories,
   getPublicInstructors,
+  getPublicInstructorBySlug,
   getPublicTestimonials,
   getPublicSiteSettings
 } from '../controllers/public.controller';
@@ -17,6 +18,7 @@ router.get('/program/:type/:slug', getProgramBySlug);
 router.get('/entities', getPublicEntities);
 router.get('/categories', getPublicCategories);
 router.get('/instructors', getPublicInstructors);
+router.get('/instructors/:slug', getPublicInstructorBySlug);
 router.get('/testimonials', getPublicTestimonials);
 router.get('/site-settings', getPublicSiteSettings);
 

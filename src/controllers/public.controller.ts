@@ -196,6 +196,39 @@ export const getPublicInstructors = async (req: Request, res: Response): Promise
   }
 };
 
+// GET /api/public/instructors/:slug - Get instructor by slug
+export const getPublicInstructorBySlug = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { slug } = req.params;
+    const instructor = await Instructor.findOne({ slug, isActive: true });
+
+    if (!instructor) {
+      res.status(404).json({
+        success: false,
+        error: {
+          message: 'Instructor not found',
+          code: 'NOT_FOUND',
+        },
+      });
+      return;
+    }
+
+    res.json({
+      success: true,
+      data: instructor,
+    });
+  } catch (error) {
+    console.error('Error fetching instructor:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to fetch instructor',
+        code: 'FETCH_ERROR',
+      },
+    });
+  }
+};
+
 // GET /api/public/testimonials - Get featured testimonials
 export const getPublicTestimonials = async (req: Request, res: Response): Promise<void> => {
   try {
