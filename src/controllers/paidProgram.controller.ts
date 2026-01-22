@@ -141,7 +141,7 @@ export const update = async (req: Request, res: Response): Promise<void> => {
 
     // If name changed, regenerate slug
     if (name && name !== program.name) {
-      const slug = await createUniqueSlug(name, PaidProgram, id);
+      const slug = await createUniqueSlug(name, PaidProgram, id as string);
       updateData.slug = slug;
       updateData.name = name;
     }
